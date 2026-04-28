@@ -1,37 +1,27 @@
-# Active Directory Homelab Portfolio
+# Active Directory Lab (Proxmox Homelab)
 
 ## 🧭 Overview
 
-This project documents a Windows Active Directory environment built and managed in a Proxmox-based virtual lab. The purpose of this lab is to demonstrate practical IT support and system administration skills, including identity management, access control, and domain-based authentication.
-
-The environment simulates a small enterprise structured across multiple branches and departments.
+This project documents a Windows Active Directory environment built in a Proxmox-based virtual lab. It simulates a small enterprise structure with multiple branches and departments, focusing on identity management and access control.
 
 ---
 
 ## 🖥️ Lab Environment
 
-**Hypervisor:**
-
 * Proxmox Virtual Environment (Proxmox VE)
-
-**Virtual Machines:**
-
-* Windows Server (Active Directory Domain Controller)
+* Windows Server (Domain Controller)
 * Windows 10 Client (Domain-joined workstation)
-
-**Core Services:**
-
 * Active Directory Domain Services (AD DS)
-* DNS (domain name resolution)
+* DNS
 * NTFS file sharing and permissions
 
 ---
 
 ## 🏗️ Active Directory Structure
 
-The domain is organized using a branch-based structure with departmental separation.
+The domain is organized using a branch-based structure.
 
-```text id="adstructurefinal"
+```text id="adimgstruct"
 Domain
 ├── Branch1
 │   ├── IT
@@ -45,58 +35,66 @@ Domain
     └── Sales
 ```
 
-This structure was designed to reflect a multi-branch organization and support scalable user and permission management.
+### 📸 OU Structure in Active Directory
+
+![OU Structure](./images/ou-structure.png)
 
 ---
 
 ## 👥 User & Group Management
 
-* User accounts were created within each branch and department
-* Security groups were created to represent departments and roles
-* Users were assigned to groups based on their department and branch
-* Groups were used to simplify access control and resource assignment
+* Users created per branch and department
+* Security groups assigned based on role and location
+* Groups used to manage access to resources
+
+### 📸 Users and Groups in ADUC
+
+![Users and Groups](./images/users-groups.png)
 
 ---
 
-## 🔐 Access Control Implementation
+## 🔐 Access Control (NTFS Permissions)
 
-* Departmental shared folders were created for resource access
-* NTFS permissions were assigned using security groups (not individual users)
-* Access was restricted based on group membership
-* Separation of access between Branch1 and Branch2 was enforced through permissions
+* Shared folders created per department
+* Permissions applied using security groups (not individual users)
+* Access restricted based on group membership
+
+### 📸 Folder Permissions Configuration
+
+![NTFS Permissions](./images/permissions.png)
 
 ---
 
 ## 🧪 Validation & Testing
 
-The environment was tested to confirm correct functionality:
+* Domain join confirmed from Windows 10 client
+* User authentication verified
+* Access tested across multiple users
+* Unauthorized access correctly denied
 
-* Windows 10 client successfully joined to the domain
-* User authentication verified across multiple accounts
-* Access to shared resources validated based on group membership
-* Unauthorized access attempts were correctly denied
-* DNS resolution confirmed within the domain environment
+### 📸 Domain-Joined Client Login
+
+![Domain Login](./images/domain-login.png)
 
 ---
 
 ## 🧠 Skills Demonstrated
 
 * Active Directory administration (users, groups, OUs)
-* Organizational Unit design and structure
+* Organizational Unit design (branch-based structure)
 * Role-based access control (RBAC)
-* NTFS permissions and shared resource security
+* NTFS permissions and file security
 * Domain authentication and client management
-* Basic Windows Server and networking concepts
-* Virtualization using Proxmox VE
+* Virtualization using Proxmox
 
 ---
 
 ## 🎯 Objective
 
-To develop practical, job-relevant IT support and system administration skills by building and managing a virtual Active Directory environment that simulates a real-world enterprise structure.
+To develop practical IT support and system administration skills through a structured Active Directory environment that simulates real-world enterprise identity and access management.
 
 ---
 
 ## 📌 Notes
 
-This project is part of an ongoing homelab used to build foundational IT infrastructure and troubleshooting skills. Additional projects such as Group Policy configuration, ticketing system simulation, and troubleshooting scenarios will be added as the lab expands.
+This project will be expanded with Group Policy configuration, troubleshooting scenarios, and helpdesk simulation labs.
