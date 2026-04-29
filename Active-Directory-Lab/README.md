@@ -45,6 +45,7 @@ lab.local
 ```
 
 ![OU Structure](./images/ou-structure.png)
+
 *ADUC showing both branches fully expanded with Users, Computers, and Groups containers and all five department OUs visible*
 
 ---
@@ -54,11 +55,13 @@ lab.local
 Over 100 user accounts are provisioned across both branches covering all five departments. Every account includes a populated organizational profile: display name, job title, department, company, office location, manager, and UPN. Users are placed in the `Users` OU of their respective branch.
 
 ![User List](./images/user-list.png)
+
 *Branch1 > Users OU showing populated user accounts with display names visible in the right pane*
 
 Clicking into any user shows a fully populated profile including their manager, department, and title.
 
 ![User Properties](./images/user-properties.png)
+
 *User Properties dialog showing the Organization tab with Title, Department, Company, and Manager fields populated*
 
 ---
@@ -99,11 +102,13 @@ All permission assignments are handled exclusively through security groups. No p
 | Marketing | B1-Marketing-Managers | Full department control |
 
 ![Security Groups](./images/security-groups.png)
+
 *Branch1 > Groups > IT OU showing all IT security groups listed in the right pane*
 
 Group membership was verified across departments to confirm all groups are actively populated.
 
 ![Group Membership](./images/group-membership.png)
+
 *B1-IT-Helpdesk Members tab showing assigned user accounts*
 
 ---
@@ -153,9 +158,11 @@ C:\Shares\
 Inheritance is disabled on restricted subfolders. Access is explicitly defined so that even senior staff from the same department cannot access payroll, audit, or security data without membership in the specific restricted group.
 
 ![NTFS Permissions](./images/permissions.png)
+
 *C:\Shares\Branch1\HR\Payroll Security tab showing B1-HR-Payroll and B1-HR-Managers as the only entries with inheritance disabled*
 
 ![Restricted Folder](./images/permissions-restricted.png)
+
 *Advanced Security Settings confirming inheritance is disabled and only two groups hold explicit permissions on the Payroll folder*
 
 ---
@@ -165,6 +172,7 @@ Inheritance is disabled on restricted subfolders. Access is explicitly defined s
 A Windows 10 workstation was joined to the domain and used to validate authentication across multiple user accounts and roles. Shared resource access was tested per role and unauthorized access attempts were confirmed to be correctly denied.
 
 ![Domain Joined](./images/domain-login.png)
+
 *PowerShell or command prompt output of `systeminfo | findstr /i "domain"` confirming the machine is joined to lab.local*
 
 ---
@@ -188,6 +196,7 @@ A Windows 10 workstation was joined to the domain and used to validate authentic
 The entire environment was provisioned using a single PowerShell script. The script handles OU creation, group creation, user provisioning with full attribute population, group membership assignment, manager mapping, file share creation, and NTFS permission assignment from start to finish with no manual steps.
 
 ![PowerShell Script](./images/powershell-run.png)
+
 *PowerShell running Setup-AD.ps1 on the Domain Controller showing completion summary with user and share counts*
 
 ---
@@ -205,11 +214,15 @@ The entire environment was provisioned using a single PowerShell script. The scr
 
 ---
 
-## What I Would Expand Next
+## Future Improvements
 
-- Group Policy Objects (GPOs) for password policy enforcement, drive mapping, and desktop lockdown
-- Fine-grained password policies scoped per department OU
-- Tiered admin model (Tier 0/1/2) to simulate Privileged Access Workstation architecture
-- Read-only Domain Controller (RODC) on Branch2 to reflect a real remote-site topology
-- Audit policy and Windows Event Log review for logon events and object access
-- SIEM integration to forward AD events to a log aggregator
+The following enhancements are planned to extend the functionality and realism of the lab environment:
+
+* Implement Group Policy Objects (GPOs) to enforce password policies and apply basic workstation restrictions
+* Expand file share configurations to support additional role-based access scenarios
+* Increase the number of users and validate access control across multiple departments
+* Simulate common helpdesk workflows, including password resets, account lockouts, and user provisioning
+* Introduce troubleshooting scenarios to replicate real-world issues such as authentication failures and permission errors
+
+These improvements are intended to further develop practical skills in Active Directory administration and IT support operations.
+
