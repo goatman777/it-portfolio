@@ -1,6 +1,8 @@
-# Active Directory Lab — Proxmox Homelab
+# Active Directory Lab | Proxmox Homelab
 
-A Windows Active Directory environment built in a Proxmox virtual lab, simulating a small enterprise network across two branches with full departmental separation. Covers identity management, role-based access control, NTFS permissions, and end-to-end domain authentication — built entirely from scratch.
+A Windows Active Directory environment built from scratch in a Proxmox virtual lab. Simulates a small enterprise network across two geographically separated branches with full departmental structure, role-based access control, and domain-authenticated workstations.
+
+> **Focus areas:** Identity management, group-based access control, NTFS permissions, domain authentication, OU design
 
 ---
 
@@ -17,10 +19,10 @@ A Windows Active Directory environment built in a Proxmox virtual lab, simulatin
 
 ## Domain Structure
 
-The domain uses a branch-based OU hierarchy with departmental separation inside each site. This mirrors how enterprise environments segment identity management across locations.
+The domain is organized using a branch-based OU hierarchy with departmental separation inside each site. This reflects how enterprise environments segment identity management across physical or logical locations.
 
 ```
-corp.local
+lab.local
 ├── Branch1
 │   ├── IT
 │   ├── HR
@@ -34,60 +36,62 @@ corp.local
 ```
 
 ![OU Structure](./images/ou-structure.png)
-*Active Directory Users and Computers — Branch1 and Branch2 expanded with department OUs visible*
+*Active Directory Users and Computers showing Branch1 and Branch2 expanded with all department OUs visible*
 
 ---
 
-## User & Group Management
+## User and Group Management
 
-User accounts are placed directly into their department OUs. Security groups are used for all role assignments — no permissions are applied to individual user accounts.
+User accounts are created within each branch and placed into their corresponding department OUs. All permission assignments are handled through security groups. No permissions are applied directly to individual user accounts.
+
+Security groups follow a `BRANCH-DEPARTMENT-ROLE` naming convention:
 
 | Group | Role |
 |---|---|
-| Helpdesk | Tier 1 support access |
-| Senior Helpdesk | Elevated support access |
-| Network Engineer | Infrastructure access |
-| Administrator | Full domain control |
+| B1-IT-Helpdesk | Tier 1 support access |
+| B1-IT-Senior-Helpdesk | Elevated support access |
+| B1-IT-Network-Engineers | Infrastructure access |
+| B1-IT-Administrators | Full domain control |
 
 ![Users and Groups](./images/users-groups.png)
-*Branch1 → IT → Groups — security groups visible inside the department OU*
+*Branch1 > IT > Groups showing security groups inside the department OU*
 
-Group membership was verified to confirm groups are actively used and not just created.
+Group membership was verified to confirm all groups are actively populated, not just created.
 
 ![Group Membership](./images/group-membership.png)
-*Helpdesk group — Members tab showing assigned user accounts*
+*B1-IT-Helpdesk group Members tab showing assigned user accounts*
 
 ---
 
 ## Access Control (NTFS Permissions)
 
-Shared folders were created for each department. All access is assigned through security groups, enforcing clean separation between departments and branches. No individual user accounts appear in any ACL.
+Shared folders were created for each department. Access is assigned exclusively through security groups, enforcing separation between departments and branches. No individual user accounts appear in any access control list.
 
 | Permission | Assigned To |
 |---|---|
-| Read | Helpdesk |
-| Modify | Senior Helpdesk, Network Engineer |
-| Full Control | Administrator |
+| Read | B1-IT-Helpdesk |
+| Modify | B1-IT-Senior-Helpdesk, B1-IT-Network-Engineers |
+| Full Control | B1-IT-Administrators |
 
 ![NTFS Permissions](./images/permissions.png)
-*Folder Properties → Security tab — groups listed with explicit permission levels, no individual users*
+*Folder Properties > Security tab showing domain security groups with explicit permission levels assigned*
 
 ---
 
 ## Domain Authentication
 
-A Windows 10 client was joined to the domain and used to validate the full authentication flow across multiple user accounts and roles.
+A Windows 10 workstation was joined to the domain and used to validate the full authentication flow across multiple user accounts and roles. Access to shared resources was tested per role and unauthorized access attempts were confirmed to be correctly denied.
 
 ![Domain Login](./images/domain-login.png)
-*Domain-joined Windows 10 workstation — `domain\user` format confirms successful domain login*
+*Command prompt output confirming the workstation is joined to lab.local*
 
 ---
 
 ## Validation
 
-- [x] Windows 10 client joined to the domain
+- [x] Windows 10 client successfully joined to the domain
 - [x] User authentication verified across multiple accounts and roles
-- [x] Shared resource access confirmed per role
+- [x] Shared resource access confirmed correct per role
 - [x] Unauthorized access attempts correctly denied
 - [x] DNS resolution confirmed within the domain
 
@@ -95,9 +99,19 @@ A Windows 10 client was joined to the domain and used to validate the full authe
 
 ## Skills Demonstrated
 
-- Active Directory administration — users, groups, OUs
-- Organizational Unit design with branch-based hierarchy
+- Active Directory administration (users, groups, OUs)
+- Organizational Unit design using a branch-based hierarchy
 - Role-based access control (RBAC) via security groups
-- NTFS permissions and file-level security
+- NTFS permissions and file-level access control
 - Domain authentication and client management
-- Virtualization with Proxmox VE
+- Virtualization using Proxmox VE
+
+---
+
+## What I Would Expand Next
+
+- Group Policy Objects (GPOs) for desktop lockdown, password policy, and drive mapping
+- Fine-grained password policies per department
+- Tiered admin model (Tier 0/1/2) to simulate PAW architecture
+- Read-only Domain Controller (RODC) for Branch2 to reflect a real remote-site setup
+- Audit policy and event log review for login and access events
