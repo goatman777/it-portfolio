@@ -1,28 +1,26 @@
-# Active Directory Lab (Proxmox Homelab)
+# Active Directory Lab — Proxmox Homelab
 
-## 🧭 Overview
-
-This project documents a Windows Active Directory environment built in a Proxmox-based virtual lab. It simulates a small enterprise structure with multiple branches and departments, focusing on identity management and access control.
+A Windows Active Directory environment built in a Proxmox virtual lab, simulating a small enterprise network across two branches with full departmental separation. Covers identity management, role-based access control, NTFS permissions, and end-to-end domain authentication — built entirely from scratch.
 
 ---
 
-## 🖥️ Lab Environment
+## Environment
 
-* Proxmox Virtual Environment (Proxmox VE)
-* Windows Server (Domain Controller)
-* Windows 10 Client (Domain-joined workstation)
-* Active Directory Domain Services (AD DS)
-* DNS
-* NTFS file sharing and permissions
+| Component | Details |
+|---|---|
+| Hypervisor | Proxmox VE |
+| Domain Controller | Windows Server (AD DS, DNS) |
+| Client Workstation | Windows 10 (domain-joined) |
+| Services | Active Directory Domain Services, DNS, NTFS file sharing |
 
 ---
 
-## 🏗️ Active Directory Structure
+## Domain Structure
 
-The domain is organized using a branch-based structure.
+The domain uses a branch-based OU hierarchy with departmental separation inside each site. This mirrors how enterprise environments segment identity management across locations.
 
-```text id="adimgstruct"
-Domain
+```
+corp.local
 ├── Branch1
 │   ├── IT
 │   ├── HR
@@ -35,66 +33,71 @@ Domain
     └── Sales
 ```
 
-### 📸 OU Structure in Active Directory
-
 ![OU Structure](./images/ou-structure.png)
+*Active Directory Users and Computers — Branch1 and Branch2 expanded with department OUs visible*
 
 ---
 
-## 👥 User & Group Management
+## User & Group Management
 
-* Users created per branch and department
-* Security groups assigned based on role and location
-* Groups used to manage access to resources
+User accounts are placed directly into their department OUs. Security groups are used for all role assignments — no permissions are applied to individual user accounts.
 
-### 📸 Users and Groups in ADUC
+| Group | Role |
+|---|---|
+| Helpdesk | Tier 1 support access |
+| Senior Helpdesk | Elevated support access |
+| Network Engineer | Infrastructure access |
+| Administrator | Full domain control |
 
 ![Users and Groups](./images/users-groups.png)
+*Branch1 → IT → Groups — security groups visible inside the department OU*
+
+Group membership was verified to confirm groups are actively used and not just created.
+
+![Group Membership](./images/group-membership.png)
+*Helpdesk group — Members tab showing assigned user accounts*
 
 ---
 
-## 🔐 Access Control (NTFS Permissions)
+## Access Control (NTFS Permissions)
 
-* Shared folders created per department
-* Permissions applied using security groups (not individual users)
-* Access restricted based on group membership
+Shared folders were created for each department. All access is assigned through security groups, enforcing clean separation between departments and branches. No individual user accounts appear in any ACL.
 
-### 📸 Folder Permissions Configuration
+| Permission | Assigned To |
+|---|---|
+| Read | Helpdesk |
+| Modify | Senior Helpdesk, Network Engineer |
+| Full Control | Administrator |
 
 ![NTFS Permissions](./images/permissions.png)
+*Folder Properties → Security tab — groups listed with explicit permission levels, no individual users*
 
 ---
 
-## 🧪 Validation & Testing
+## Domain Authentication
 
-* Domain join confirmed from Windows 10 client
-* User authentication verified
-* Access tested across multiple users
-* Unauthorized access correctly denied
-
-### 📸 Domain-Joined Client Login
+A Windows 10 client was joined to the domain and used to validate the full authentication flow across multiple user accounts and roles.
 
 ![Domain Login](./images/domain-login.png)
+*Domain-joined Windows 10 workstation — `domain\user` format confirms successful domain login*
 
 ---
 
-## 🧠 Skills Demonstrated
+## Validation
 
-* Active Directory administration (users, groups, OUs)
-* Organizational Unit design (branch-based structure)
-* Role-based access control (RBAC)
-* NTFS permissions and file security
-* Domain authentication and client management
-* Virtualization using Proxmox
-
----
-
-## 🎯 Objective
-
-To develop practical IT support and system administration skills through a structured Active Directory environment that simulates real-world enterprise identity and access management.
+- [x] Windows 10 client joined to the domain
+- [x] User authentication verified across multiple accounts and roles
+- [x] Shared resource access confirmed per role
+- [x] Unauthorized access attempts correctly denied
+- [x] DNS resolution confirmed within the domain
 
 ---
 
-## 📌 Notes
+## Skills Demonstrated
 
-This project will be expanded with Group Policy configuration, troubleshooting scenarios, and helpdesk simulation labs.
+- Active Directory administration — users, groups, OUs
+- Organizational Unit design with branch-based hierarchy
+- Role-based access control (RBAC) via security groups
+- NTFS permissions and file-level security
+- Domain authentication and client management
+- Virtualization with Proxmox VE
