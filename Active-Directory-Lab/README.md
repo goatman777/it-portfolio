@@ -1,8 +1,8 @@
 # Active Directory Lab | Proxmox Homelab
 
-A Windows Active Directory environment built from scratch in a Proxmox virtual lab. Simulates a small enterprise network across two geographically separated branches with full departmental structure, role-based access control, and domain-authenticated workstations.
+A fully scripted Windows Active Directory environment simulating the identity infrastructure of a mid-size financial services firm across two branch offices. Built entirely from scratch on Proxmox VE, this lab covers enterprise OU design, role-based access control, tiered NTFS permissions, departmental file shares, and end-to-end domain authentication across 100+ user accounts.
 
-> **Focus areas:** Identity management, group-based access control, NTFS permissions, domain authentication, OU design
+> **Focus areas:** Enterprise OU design, RBAC, NTFS permissions, file share security, domain authentication, AD automation via PowerShell
 
 ---
 
@@ -13,105 +13,203 @@ A Windows Active Directory environment built from scratch in a Proxmox virtual l
 | Hypervisor | Proxmox VE |
 | Domain Controller | Windows Server (AD DS, DNS) |
 | Client Workstation | Windows 10 (domain-joined) |
-| Services | Active Directory Domain Services, DNS, NTFS file sharing |
+| Domain | lab.local |
+| Services | Active Directory Domain Services, DNS, SMB file sharing, NTFS permissions |
 
 ---
 
 ## Domain Structure
 
-The domain is organized using a branch-based OU hierarchy with departmental separation inside each site. This reflects how enterprise environments segment identity management across physical or logical locations.
+The domain is organized using a branch-based OU hierarchy that mirrors how enterprise environments segment identity management across physical locations. Each branch contains dedicated OUs for Users, Computers, and Groups. Security groups are nested inside departmental sub-OUs under Groups for clean separation.
 
 ```
 lab.local
 ├── Branch1
-│   ├── IT
-│   ├── HR
-│   ├── Finance
-│   └── Sales
+│   ├── Users
+│   ├── Computers
+│   └── Groups
+│       ├── Finance
+│       ├── HR
+│       ├── IT
+│       ├── Sales
+│       └── Marketing
 └── Branch2
-    ├── IT
-    ├── HR
-    ├── Finance
-    └── Sales
+    ├── Users
+    ├── Computers
+    └── Groups
+        ├── Finance
+        ├── HR
+        ├── IT
+        ├── Sales
+        └── Marketing
 ```
 
 ![OU Structure](./images/ou-structure.png)
-*Active Directory Users and Computers showing Branch1 and Branch2 expanded with all department OUs visible*
+*ADUC showing both branches fully expanded with Users, Computers, and Groups containers and all five department OUs visible*
 
 ---
 
-## User and Group Management
+## User Accounts
 
-User accounts are created within each branch and placed into their corresponding department OUs. All permission assignments are handled through security groups. No permissions are applied directly to individual user accounts.
+Over 100 user accounts are provisioned across both branches covering all five departments. Every account includes a populated organizational profile: display name, job title, department, company, office location, manager, and UPN. Users are placed in the `Users` OU of their respective branch.
 
-Security groups follow a `BRANCH-DEPARTMENT-ROLE` naming convention:
+![User List](./images/user-list.png)
+*Branch1 > Users OU showing populated user accounts with display names visible in the right pane*
 
-| Group | Role |
-|---|---|
-| B1-IT-Helpdesk | Tier 1 support access |
-| B1-IT-Senior-Helpdesk | Elevated support access |
-| B1-IT-Network-Engineers | Infrastructure access |
-| B1-IT-Administrators | Full domain control |
+Clicking into any user shows a fully populated profile including their manager, department, and title.
 
-![Users and Groups](./images/users-groups.png)
-*Branch1 > IT > Groups showing security groups inside the department OU*
+![User Properties](./images/user-properties.png)
+*User Properties dialog showing the Organization tab with Title, Department, Company, and Manager fields populated*
 
-Group membership was verified to confirm all groups are actively populated, not just created.
+---
+
+## Security Groups and RBAC
+
+All permission assignments are handled exclusively through security groups. No permissions are ever applied to individual user accounts. Groups follow a strict `BRANCH-DEPARTMENT-ROLE` naming convention, making group purpose immediately identifiable without opening the object.
+
+### Branch 1 Groups (mirrored in Branch 2 with B2 prefix)
+
+| Department | Group | Role |
+|---|---|---|
+| Finance | B1-Finance-Analysts | Junior analyst access |
+| Finance | B1-Finance-Senior-Analysts | Senior analyst access |
+| Finance | B1-Finance-Controllers | Controller access |
+| Finance | B1-Finance-Auditors | Audit folder access only |
+| Finance | B1-Finance-Managers | Full department control |
+| HR | B1-HR-Coordinators | General HR access |
+| HR | B1-HR-Specialists | Specialist access |
+| HR | B1-HR-Recruiters | Recruitment folder access |
+| HR | B1-HR-Payroll | Payroll folder access only |
+| HR | B1-HR-Managers | Full department control |
+| IT | B1-IT-Helpdesk | Tier 1 support access |
+| IT | B1-IT-Senior-Helpdesk | Tier 2 support access |
+| IT | B1-IT-Network-Engineers | Network infrastructure access |
+| IT | B1-IT-Security-Analysts | Security folder access only |
+| IT | B1-IT-Systems-Engineers | Systems access |
+| IT | B1-IT-Administrators | Full domain control |
+| Sales | B1-Sales-Representatives | Standard sales access |
+| Sales | B1-Sales-Senior-Representatives | Senior sales access |
+| Sales | B1-Sales-Account-Executives | Account folder access |
+| Sales | B1-Sales-Business-Development | BD folder access |
+| Sales | B1-Sales-Managers | Full department control |
+| Marketing | B1-Marketing-Coordinators | General marketing access |
+| Marketing | B1-Marketing-Specialists | Specialist access |
+| Marketing | B1-Marketing-Content | Content folder access |
+| Marketing | B1-Marketing-Digital | Digital folder access |
+| Marketing | B1-Marketing-Managers | Full department control |
+
+![Security Groups](./images/security-groups.png)
+*Branch1 > Groups > IT OU showing all IT security groups listed in the right pane*
+
+Group membership was verified across departments to confirm all groups are actively populated.
 
 ![Group Membership](./images/group-membership.png)
-*B1-IT-Helpdesk group Members tab showing assigned user accounts*
+*B1-IT-Helpdesk Members tab showing assigned user accounts*
 
 ---
 
-## Access Control (NTFS Permissions)
+## File Shares and NTFS Permissions
 
-Shared folders were created for each department. Access is assigned exclusively through security groups, enforcing separation between departments and branches. No individual user accounts appear in any access control list.
+Departmental file shares were created under `C:\Shares\` with a subfolder structure matching real-world usage patterns. Each share is scoped per branch to enforce data separation between locations. NTFS permissions are applied at both the department root and subfolder level using security groups only. No individual user accounts appear in any ACL.
 
-| Permission | Assigned To |
-|---|---|
-| Read | B1-IT-Helpdesk |
-| Modify | B1-IT-Senior-Helpdesk, B1-IT-Network-Engineers |
-| Full Control | B1-IT-Administrators |
+### Share Structure
+
+```
+C:\Shares\
+├── Branch1\
+│   ├── Finance\       (share: B1-Finance)
+│   │   ├── Reports
+│   │   ├── Budgets
+│   │   └── Audits        <- restricted: Finance-Auditors and Managers only
+│   ├── HR\            (share: B1-HR)
+│   │   ├── Policies
+│   │   ├── Recruitment
+│   │   └── Payroll       <- restricted: HR-Payroll and Managers only
+│   ├── IT\            (share: B1-IT)
+│   │   ├── Documentation
+│   │   ├── Scripts
+│   │   └── Security      <- restricted: IT-Security-Analysts and Managers only
+│   ├── Sales\         (share: B1-Sales)
+│   │   ├── Contracts
+│   │   ├── Leads
+│   │   └── Reports
+│   └── Marketing\     (share: B1-Marketing)
+│       ├── Campaigns
+│       ├── Content
+│       └── Analytics
+└── Branch2\
+    └── (identical structure with B2 groups)
+```
+
+### Permission Tiers
+
+| Level | Permission | Example Groups |
+|---|---|---|
+| Managers | Full Control | B1-Finance-Managers, B1-IT-Administrators |
+| Senior staff | Modify | B1-Finance-Senior-Analysts, B1-IT-Senior-Helpdesk |
+| Junior staff | Read and Execute | B1-Finance-Analysts, B1-IT-Helpdesk |
+| Restricted subfolders | Modify (scoped group only) | B1-HR-Payroll, B1-IT-Security-Analysts, B1-Finance-Auditors |
+
+Inheritance is disabled on restricted subfolders. Access is explicitly defined so that even senior staff from the same department cannot access payroll, audit, or security data without membership in the specific restricted group.
 
 ![NTFS Permissions](./images/permissions.png)
-*Folder Properties > Security tab showing domain security groups with explicit permission levels assigned*
+*C:\Shares\Branch1\HR\Payroll Security tab showing B1-HR-Payroll and B1-HR-Managers as the only entries with inheritance disabled*
+
+![Restricted Folder](./images/permissions-restricted.png)
+*Advanced Security Settings confirming inheritance is disabled and only two groups hold explicit permissions on the Payroll folder*
 
 ---
 
 ## Domain Authentication
 
-A Windows 10 workstation was joined to the domain and used to validate the full authentication flow across multiple user accounts and roles. Access to shared resources was tested per role and unauthorized access attempts were confirmed to be correctly denied.
+A Windows 10 workstation was joined to the domain and used to validate authentication across multiple user accounts and roles. Shared resource access was tested per role and unauthorized access attempts were confirmed to be correctly denied.
 
-![Domain Login](./images/domain-login.png)
-*Command prompt output confirming the workstation is joined to lab.local*
+![Domain Joined](./images/domain-login.png)
+*PowerShell or command prompt output of `systeminfo | findstr /i "domain"` confirming the machine is joined to lab.local*
 
 ---
 
 ## Validation
 
 - [x] Windows 10 client successfully joined to the domain
-- [x] User authentication verified across multiple accounts and roles
-- [x] Shared resource access confirmed correct per role
+- [x] 100+ user accounts provisioned with full organizational profile
+- [x] All users assigned to correct security groups based on role
+- [x] Manager field populated on all non-manager accounts
+- [x] Departmental file shares created and accessible via UNC path
+- [x] NTFS permission tiers verified per role
+- [x] Restricted subfolders confirmed inaccessible to unauthorized groups
 - [x] Unauthorized access attempts correctly denied
 - [x] DNS resolution confirmed within the domain
 
 ---
 
+## Automation
+
+The entire environment was provisioned using a single PowerShell script. The script handles OU creation, group creation, user provisioning with full attribute population, group membership assignment, manager mapping, file share creation, and NTFS permission assignment from start to finish with no manual steps.
+
+![PowerShell Script](./images/powershell-run.png)
+*PowerShell running Setup-AD.ps1 on the Domain Controller showing completion summary with user and share counts*
+
+---
+
 ## Skills Demonstrated
 
-- Active Directory administration (users, groups, OUs)
-- Organizational Unit design using a branch-based hierarchy
-- Role-based access control (RBAC) via security groups
-- NTFS permissions and file-level access control
+- Active Directory administration (users, groups, OUs, attributes)
+- Enterprise OU design with branch and departmental hierarchy
+- Role-based access control (RBAC) using security groups
+- NTFS permissions with tiered access and restricted subfolder isolation
+- SMB file share creation and share-level permission management
 - Domain authentication and client management
+- PowerShell scripting for AD automation and bulk provisioning
 - Virtualization using Proxmox VE
 
 ---
 
 ## What I Would Expand Next
 
-- Group Policy Objects (GPOs) for desktop lockdown, password policy, and drive mapping
-- Fine-grained password policies per department
-- Tiered admin model (Tier 0/1/2) to simulate PAW architecture
-- Read-only Domain Controller (RODC) for Branch2 to reflect a real remote-site setup
-- Audit policy and event log review for login and access events
+- Group Policy Objects (GPOs) for password policy enforcement, drive mapping, and desktop lockdown
+- Fine-grained password policies scoped per department OU
+- Tiered admin model (Tier 0/1/2) to simulate Privileged Access Workstation architecture
+- Read-only Domain Controller (RODC) on Branch2 to reflect a real remote-site topology
+- Audit policy and Windows Event Log review for logon events and object access
+- SIEM integration to forward AD events to a log aggregator
